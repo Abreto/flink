@@ -44,6 +44,9 @@ import org.apache.flink.streaming.api.windowing.time.Time;
 import org.apache.flink.util.FlinkRuntimeException;
 import org.apache.flink.util.Preconditions;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -84,6 +87,9 @@ import static org.apache.flink.cep.nfa.MigrationUtils.deserializeComputationStat
  *     https://people.cs.umass.edu/~yanlei/publications/sase-sigmod08.pdf</a>
  */
 public class NFA<T> {
+
+    /** Test Logger. */
+    private static final Logger LOG = LoggerFactory.getLogger(NFA.class);
 
     /**
      * A set of all the valid NFA states, as returned by the {@link NFACompiler NFACompiler}. These
@@ -316,6 +322,9 @@ public class NFA<T> {
                 new PriorityQueue<>(NFAState.COMPUTATION_STATE_COMPARATOR);
 
         // iterate over all current computations
+        String partialMatcheString = nfaState.getPartialMatches().stream().map(s -> "[" + s.getCurrentStateName() + "]")
+                .reduce("", (a, b) -> a + b);
+        System.out.println("Maintain partial matches: " + partialMatcheString);
         for (ComputationState computationState : nfaState.getPartialMatches()) {
             final Collection<ComputationState> newComputationStates =
                     computeNextStates(sharedBufferAccessor, computationState, event, timerService);
@@ -364,6 +373,7 @@ public class NFA<T> {
             nfaState.setStateChanged();
         }
 
+        System.out.println("Try producing results");
         List<Map<String, List<T>>> result = new ArrayList<>();
         if (afterMatchSkipStrategy.isSkipStrategy()) {
             processMatchesAccordingToSkipStrategy(
@@ -599,6 +609,9 @@ public class NFA<T> {
         int totalTakeToSkip = Math.max(0, outgoingEdges.getTotalTakeBranches() - 1);
 
         final List<ComputationState> resultingComputationStates = new ArrayList<>();
+        System.out.println("Reach state " + computationState.getCurrentStateName());
+        System.out.println("Outgoing states: "
+                + edges.stream().map(e -> "[" + e.getTargetState().getName() + "]").reduce("", (a, b) -> a + b));
         for (StateTransition<T> edge : edges) {
             switch (edge.getAction()) {
                 case IGNORE:
@@ -707,6 +720,9 @@ public class NFA<T> {
             sharedBufferAccessor.releaseNode(
                     computationState.getPreviousBufferEntry(), computationState.getVersion());
         }
+
+        System.out.println("Final possible dest: " + resultingComputationStates.stream()
+                .map(s -> "[" + s.getCurrentStateName() + "]").reduce("", (a, b) -> a + b));
 
         return resultingComputationStates;
     }

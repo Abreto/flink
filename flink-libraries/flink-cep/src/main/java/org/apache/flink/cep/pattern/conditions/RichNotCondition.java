@@ -39,4 +39,13 @@ public class RichNotCondition<T> extends RichCompositeIterativeCondition<T> {
     public boolean filter(T value, Context<T> ctx) throws Exception {
         return !getNestedConditions()[0].filter(value, ctx);
     }
+
+    @Override
+    public String toString() {
+        return new StringBuilder()
+            .append("!(")
+            .append(getNestedConditions()[0].toString())
+            .append(")")
+            .toString();
+    }
 }

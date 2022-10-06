@@ -97,7 +97,9 @@ public class StateTransition<T> implements Serializable {
                 .append(sourceState.getName())
                 .append(" to ")
                 .append(targetState.getName())
-                .append(condition != null ? ", with condition)" : ")")
+                .append(condition != null ? ", with condition " : "")
+                .append(condition != null ? condition.toString() : "")
+                .append(")")
                 .toString();
     }
 }

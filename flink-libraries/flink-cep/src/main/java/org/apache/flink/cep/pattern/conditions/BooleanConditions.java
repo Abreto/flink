@@ -36,6 +36,11 @@ public class BooleanConditions {
             public boolean filter(T value) throws Exception {
                 return true;
             }
+
+            @Override
+            public String toString() {
+                return "True";
+            }
         };
     }
 
@@ -47,6 +52,11 @@ public class BooleanConditions {
             @Override
             public boolean filter(T value) throws Exception {
                 return false;
+            }
+
+            @Override
+            public String toString() {
+                return "False";
             }
         };
     }
